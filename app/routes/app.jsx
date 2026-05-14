@@ -1,30 +1,103 @@
-import { Outlet, useLoaderData, useRouteError } from "react-router";
+import {
+  useLoaderData,
+  useRouteError
+} from "react-router";
+
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { AppProvider } from "@shopify/shopify-app-react-router/react";
+
 import { authenticate } from "../shopify.server";
 
+import { useEffect, useState } from "react";
+
 export const loader = async ({ request }) => {
+
   await authenticate.admin(request);
 
-  // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  return {
+    apiRoot: process.env.API_ROOT || ""
+  };
 };
 
-export default function App() {
-  const { apiKey } = useLoaderData();
+export default function AppHome() {
+
+  const { apiRoot } = useLoaderData();
+
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+
+    fetch(`${apiRoot}/api/stats`)
+
+      .then(res => res.json())
+
+      .then(data => {
+        setStats(data);
+      });
+
+  }, [apiRoot]);
+
+  if (!stats) {
+
+    return <div>Loading...</div>;
+  }
 
   return (
-    <AppProvider embedded apiKey={apiKey}>
-      <s-app-nav>
-        <s-link href="/app">Home</s-link>
-        <s-link href="/app/additional">Additional page</s-link>
-      </s-app-nav>
-      <Outlet />
-    </AppProvider>
+
+    <div style={{ padding: "20px" }}>
+
+      <h1>StockMaska Dashboard</h1>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '20px',
+        marginTop: '20px'
+      }}>
+
+        <Card
+          title="Pending Queue"
+          value={stats.pending}
+        />
+
+        <Card
+          title="Processed"
+          value={stats.done}
+        />
+
+        <Card
+          title="Failed"
+          value={stats.failed}
+        />
+
+        <Card
+          title="Locations"
+          value={stats.locations}
+        />
+
+      </div>
+
+    </div>
   );
 }
 
-// Shopify needs React Router to catch some thrown responses, so that their headers are included in the response.
+function Card({ title, value }) {
+
+  return (
+
+    <div style={{
+      border: '1px solid #ddd',
+      padding: '20px',
+      borderRadius: '10px'
+    }}>
+
+      <h3>{title}</h3>
+
+      <h1>{value}</h1>
+
+    </div>
+  );
+}
+
 export function ErrorBoundary() {
   return boundary.error(useRouteError());
 }
