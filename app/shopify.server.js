@@ -28,7 +28,7 @@ const shopify = shopifyApp({
       try {
 
         await axios.post(
-          `${process.env.API_ROOT}/api/stores/install`,
+          `${process.env.VITE_API_ROOT}/api/stores/install`,
           {
             shop: session.shop,
             access_token: session.accessToken,

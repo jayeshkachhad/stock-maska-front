@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   Page,
   Card,
@@ -9,6 +10,9 @@ import {
 } from "@shopify/polaris";
 
 export default function LocationsPage() {
+
+  const apiRoot = import.meta.env.VITE_API_ROOT;
+
   const [locations, setLocations] = useState([]);
 
   const csvOptions = [
@@ -19,48 +23,76 @@ export default function LocationsPage() {
   ];
 
   const fetchLocations = async () => {
-    const response = await fetch("/api/locations");
-    const data = await response.json();
 
-    setLocations(data.data || []);
+    try {
+
+      const response = await fetch(
+        `${apiRoot}/api/locations/get-locations`
+      );
+
+      const data = await response.json();
+
+      setLocations(data.data || []);
+
+    } catch (error) {
+
+      console.error(error);
+    }
   };
 
   useEffect(() => {
+
     fetchLocations();
+
   }, []);
 
   const updateMapping = async (locationId, csvCode) => {
-    await fetch("/api/locations/map", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        location_id: locationId,
-        csv_code: csvCode,
-      }),
-    });
 
-    setLocations((prev) =>
-      prev.map((item) =>
-        item.id === locationId
-          ? { ...item, csv_code: csvCode }
-          : item
-      )
-    );
+    try {
+
+      await fetch(`${apiRoot}/api/locations/map-locations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          location_id: locationId,
+          csv_code: csvCode,
+        }),
+      });
+
+      setLocations((prev) =>
+        prev.map((item) =>
+          item.id === locationId
+            ? { ...item, csv_code: csvCode }
+            : item
+        )
+      );
+
+    } catch (error) {
+
+      console.error(error);
+    }
   };
 
   return (
+
     <Page title="Location Mapping">
+
       <BlockStack gap="400">
+
         {locations.map((location) => (
+
           <Card key={location.id}>
+
             <InlineStack align="space-between">
+
               <Text variant="headingMd">
                 {location.store_name}
               </Text>
 
               <div style={{ width: 250 }}>
+
                 <Select
                   options={csvOptions}
                   value={location.csv_code || ""}
@@ -68,11 +100,16 @@ export default function LocationsPage() {
                     updateMapping(location.id, value)
                   }
                 />
+
               </div>
+
             </InlineStack>
+
           </Card>
         ))}
+
       </BlockStack>
+
     </Page>
   );
 }
