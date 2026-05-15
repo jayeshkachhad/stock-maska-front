@@ -15,12 +15,12 @@ export default function LocationsPage() {
 
   const [locations, setLocations] = useState([]);
 
-  const csvOptions = [
-    { label: "Select CSV", value: "" },
-    { label: "OH_032", value: "OH_032" },
-    { label: "OH_034", value: "OH_034" },
-    { label: "OH_078", value: "OH_078" },
-  ];
+  // const csvOptions = [
+  //   { label: "Select CSV", value: "" },
+  //   { label: "OH_032", value: "OH_032" },
+  //   { label: "OH_034", value: "OH_034" },
+  //   { label: "OH_078", value: "OH_078" },
+  // ];
 
   const fetchLocations = async () => {
 
@@ -41,6 +41,16 @@ export default function LocationsPage() {
   };
 
   useEffect(() => {
+
+    fetch(`${apiRoot}/api/locations/csv-names`)
+      .then(res => res.json())
+      .then(data => {
+
+        setCsvOptions([
+          { label: "Select CSV", value: "" },
+          ...(data.data || [])
+        ]);
+      });
 
     fetchLocations();
 

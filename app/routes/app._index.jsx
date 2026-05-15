@@ -13,6 +13,7 @@ import {
   BlockStack,
   InlineStack,
   Text,
+  Button,
 } from "@shopify/polaris";
 
 export const loader = async ({ request }) => {
@@ -30,15 +31,9 @@ export default function DashboardPage() {
 
   const [stats, setStats] = useState(null);
 
+  const [csvOptions, setCsvOptions] = useState([]);
+
   const [locations, setLocations] = useState([]);
-
-  const csvOptions = [
-    { label: "Select CSV", value: "" },
-    { label: "OH_032", value: "OH_032" },
-    { label: "OH_034", value: "OH_034" },
-    { label: "OH_078", value: "OH_078" },
-  ];
-
   // Dashboard Stats
   useEffect(() => {
 
@@ -46,6 +41,17 @@ export default function DashboardPage() {
       .then(res => res.json())
       .then(data => {
         setStats(data);
+      });
+
+      
+    fetch(`${apiRoot}/api/locations/csv-names`)
+      .then(res => res.json())
+      .then(data => {
+
+        setCsvOptions([
+          { label: "Select CSV", value: "" },
+          ...(data.data || [])
+        ]);
       });
 
   }, [apiRoot]);
@@ -93,6 +99,53 @@ export default function DashboardPage() {
       console.error(error);
     }
   };
+
+  const handleMappingChange = (locationId, csvCode) => {
+
+  setLocations((prev) =>
+    prev.map((item) =>
+      item.id === locationId
+        ? { ...item, csv_code: csvCode }
+        : item
+    )
+  );
+};
+
+  const saveMappings = async () => {
+
+  try {
+
+    const mappings = locations.map((location) => ({
+      location_id: location.id,
+      csv_code: location.csv_code || "",
+    }));
+
+    const response = await fetch(
+      `${apiRoot}/api/locations/map-locations`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          mappings,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    alert(data.message);
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Failed to save mappings");
+  }
+};
 
   return (
 
@@ -160,7 +213,7 @@ export default function DashboardPage() {
                           options={csvOptions}
                           value={location.csv_code || ""}
                           onChange={(value) =>
-                            updateMapping(location.id, value)
+                            handleMappingChange(location.id, value)
                           }
                         />
 
@@ -180,6 +233,17 @@ export default function DashboardPage() {
         </Card>
 
       </BlockStack>
+
+      <div style={{ marginTop: "20px" }}>
+
+  <Button
+    variant="primary"
+    onClick={saveMappings}
+  >
+    Save Mappings
+  </Button>
+
+</div>
 
     </Page>
   );
