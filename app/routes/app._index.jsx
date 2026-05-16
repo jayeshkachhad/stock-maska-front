@@ -43,7 +43,7 @@ export default function DashboardPage() {
         setStats(data);
       });
 
-      
+
     fetch(`${apiRoot}/api/locations/csv-names`)
       .then(res => res.json())
       .then(data => {
@@ -102,54 +102,74 @@ export default function DashboardPage() {
 
   const handleMappingChange = (locationId, csvCode) => {
 
-  setLocations((prev) =>
-    prev.map((item) =>
-      item.id === locationId
-        ? { ...item, csv_code: csvCode }
-        : item
-    )
-  );
-};
+    setLocations((prev) =>
+      prev.map((item) =>
+        item.id === locationId
+          ? { ...item, csv_code: csvCode }
+          : item
+      )
+    );
+  };
 
+  const syncLocations = async () => {
+
+    try {
+      const response = await fetch(
+        `${apiRoot}/api/locations/sync-locations`
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert(data?.message || "Failed to sync locations");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Failed to sync locations");
+    }
+  };
+  
   const saveMappings = async () => {
 
-  try {
+    try {
 
-    const mappings = locations.map((location) => ({
-      location_id: location.id,
-      csv_code: location.csv_code || "",
-    }));
+      const mappings = locations.map((location) => ({
+        location_id: location.id,
+        csv_code: location.csv_code || "",
+      }));
 
-    const response = await fetch(
-      `${apiRoot}/api/locations/map-locations`,
-      {
-        method: "POST",
+      const response = await fetch(
+        `${apiRoot}/api/locations/map-locations`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify({
-          mappings,
-        }),
-      }
-    );
+          body: JSON.stringify({
+            mappings,
+          }),
+        }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    alert(data.message);
+      alert(data.message);
 
-  } catch (error) {
+    } catch (error) {
 
-    console.error(error);
+      console.error(error);
 
-    alert("Failed to save mappings");
-  }
-};
+      alert("Failed to save mappings");
+    }
+  };
 
   return (
 
-    <Page title="StockMaska Dashboard">
+    <Page title="StockMaska Sync">
 
       <BlockStack gap="500">
 
@@ -234,16 +254,23 @@ export default function DashboardPage() {
 
       </BlockStack>
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "20px", marginBottom: "40px",  display: "flex", gap: "12px" }}>
 
-  <Button
-    variant="primary"
-    onClick={saveMappings}
-  >
-    Save Mappings
-  </Button>
+        <Button
+          variant="secondary"
+          onClick={syncLocations}
+        >
+          Sync Locations
+        </Button>
 
-</div>
+        <Button
+          variant="primary"
+          onClick={saveMappings}
+        >
+          Save Mappings
+        </Button>
+
+      </div>
 
     </Page>
   );
