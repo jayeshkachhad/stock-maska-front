@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "2dcc5de8f75bd403151beab512f145e9"
-application_url = "stf.coooler.fun"
+application_url = "https://stf.coooler.fun"
 embedded = true
 name = "StockMaska"
 
