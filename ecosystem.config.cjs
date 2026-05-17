@@ -1,9 +1,9 @@
 module.exports = {
   apps: [
     {
-      name: "shopify-app-front",
-      script: "react-router-serve",
-      args: "./build/server/index.js",
+      name: "shopify-app",
+      script: "npm",
+      args: "run start",
       env: {
         NODE_ENV: "production",
         PORT: 1465
