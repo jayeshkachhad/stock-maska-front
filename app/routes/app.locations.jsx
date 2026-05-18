@@ -9,6 +9,8 @@ import {
   Text,
 } from "@shopify/polaris";
 
+
+
 export default function LocationsPage() {
 
   const apiRoot = import.meta.env.VITE_API_ROOT;
